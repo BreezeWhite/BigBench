@@ -1,0 +1,15 @@
+[package]
+name = "pi_series"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+astro-float = { version = "0.9.5", default-features = false, features = [
+    "std",
+] }
+bigdecimal = { version = "0.4.8", features = ["std"] }
+clap = { version = "4.5.40", features = ["derive"] }
+dashu = "0.4.2"
+num-bigfloat = { version = "1.7.2", default-features = false }
+rug = "1.27.0"
+rust_decimal = { version = "1.37.2", features = ["macros"] }
