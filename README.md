@@ -60,16 +60,16 @@ The results are as the following table:
 - The second fastest one is the `rug` approach, which is based on GNU libraries. For the correctness, though the precision has been set to 1,000 digits, there is still only 30% match compare to a thousand Pi digits.
 - The `rust-decimal` approach is at third place. Since it uses fixed-length of representation, the precision is also limited to a low place.
 - `num_bigfloat` also leverages fixed-length of number representation, the same as `rust-decimal`. Though it does provide finer precision, it's still much slower than `rust-decimal`.
-- `astro-float` 
-- `dashu` is the only rust crate that perfectly match a thousand Pi digits, given the precision all set to 1,000. It also runs in a fair speed and much easier to use in comparison with `astro-float`. It is also written in pure Rust, compared to `rug` that relies on additional GNU libraries.
+- `astro-float` does have a boost to the precision without sacrificing too much speed compared to its precedent project `num_bigfloat`. However, it still fails to represent the full 1,000 digits of Pi when setting the precision to 1,000. It's also the hardest to write compared to all other crates.
+- `dashu` is the only rust crate that perfectly calculate to a thousand Pi digits, given the precision set to 1,000. It also runs in a fair speed and much easier to write in comparison with `astro-float`. It is also written in pure Rust, compared to `rug` that relies on additional GNU libraries.
 - Though `bigdecimal` is also written in pure Rust, it in contrast has the worst performance, and the corretness is neither good.
 - It's surprising that Python runs faster than both `dashu` and `bigdecimal`, and with an accuracy of 100% match!
 
 ## Conclusion
 
-Overall, if you are doing extremely precise floating-point calculation, `rug` is suggested, though do bare in mind to tune the digit of precision to your own needs.
+Overall, if you are doing extremely precise floating-point calculation, `rug` is suggested. **DO** bare in mind to tune the digit of precision to your own needs.
 
-The second choice goes to `dashu`, for its effciency, precision, and pure Rust support.
+The second recommended choice goes to `dashu`, for its effciency, precision, ease of use, and pure Rust support.
 
 
 ## Appendix
