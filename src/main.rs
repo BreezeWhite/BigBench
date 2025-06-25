@@ -2,6 +2,8 @@ use astro_float::{BigFloat as AFloat, RoundingMode};
 use bigdecimal::BigDecimal;
 use clap::{Parser, Subcommand};
 use dashu::float::DBig;
+use decimal_rs::Decimal as RDecimal;
+use fastnum::dec1024;
 use num_bigfloat::{ONE, ZERO};
 use rug::Float;
 use rust_decimal::prelude::*;
@@ -27,6 +29,8 @@ enum Actions {
     DashuBbp,
     BigFloatBbp,
     AstroFloatBbp,
+    FastnumBbp,
+    DecimalRsBbp,
 }
 
 const PI_1000: &str = "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821\
@@ -73,25 +77,25 @@ fn calc_pi_leibniz(start_idx: u64, end_idx: u64) -> String {
 
 fn raw_bbp(start_idx: u64, end_idx: u64) -> String {
     let mut pi = 0f64;
-    for i in start_idx..end_idx {
-        let comm = (i * 8) as f64;
+    let mut comm = 0.;
+    let mut deno = 1.;
+    for _ in start_idx..end_idx {
         let a = 4. / (comm + 1.);
         let b = 2. / (comm + 4.);
         let c = 1. / (comm + 5.);
         let d = 1. / (comm + 6.);
-        let mut s = a - b - c - d;
-        for _ in 0..i {
-            s /= 16.;
-        }
-        pi += s;
+        pi += (a - b - c - d) / &deno;
+        comm += 8.;
+        deno *= 16.;
     }
     format!("{pi:.1000}")
 }
 
 fn rustdecimal_bbp(start_idx: u64, end_idx: u64) -> String {
     let mut pi = dec!(0);
+    let mut comm = dec!(0);
+    // let mut deno = dec!(1);
     for i in start_idx..end_idx {
-        let comm = dec!(8) * Decimal::from_u64(i).unwrap();
         let a = dec!(4) / (comm + dec!(1));
         let b = dec!(2) / (comm + dec!(4));
         let c = dec!(1) / (comm + dec!(5));
@@ -102,6 +106,8 @@ fn rustdecimal_bbp(start_idx: u64, end_idx: u64) -> String {
             s /= dec!(16);
         }
         pi += s;
+        comm += dec!(8);
+        // deno *= dec!(16); // Doing this way will cause overflow
     }
     format!("{pi:.1000}")
 }
@@ -124,21 +130,21 @@ fn bigdecimal_leibniz(start_idx: u64, end_idx: u64) -> String {
 }
 
 fn bigdecimal_bbp(start_idx: u64, end_idx: u64) -> String {
-    let prec = 1000;
-    let mut pi = BigDecimal::from(0).with_prec(prec);
-    for i in start_idx..end_idx {
-        let comm: BigDecimal = 8 * BigDecimal::from(i).with_prec(prec);
-        let a = 4 / (comm.clone() + 1);
-        let b = 2 / (comm.clone() + 4);
-        let c = 1 / (comm.clone() + 5);
-        let d = 1 / (comm + 6);
+    // Precision is set during compile time.
+    // export RUST_BIGDECIMAL_DEFAULT_PRECISION=1000
+    let mut pi = BigDecimal::from(0);
+    let mut deno = BigDecimal::from(1);
+    let mut comm = BigDecimal::from(0);
 
-        let mut s: BigDecimal = a - b - c - d;
-        s = s.with_prec(prec);
-        for _ in 0..i {
-            s /= 16;
-        }
-        pi += s;
+    for _ in start_idx..end_idx {
+        let a = 4 / (&comm + 1);
+        let b = 2 / (&comm + 4);
+        let c = 1 / (&comm + 5);
+        let d = 1 / (&comm + 6);
+
+        pi += (a - b - c - d) / &deno;
+        comm += 8;
+        deno *= 16;
     }
 
     format!("{pi:.1000}")
@@ -163,23 +169,24 @@ fn rug_leibniz(start_idx: u64, end_idx: u64) -> String {
 }
 
 fn rug_bbp(start_idx: u64, end_idx: u64) -> String {
-    // Be very careful about the precision settings. Sometime it's not
-    // that the algorithm is wrong or have bug, but the precision itself
-    // is not enough to represent the corret number.
-    let prec = 1000;
-    let mut pi = Float::with_val(prec, 0.);
-    for i in start_idx..end_idx {
-        let comm: Float = Float::with_val(prec, i) * 8;
+    // The precision in rug refers to binary digits.
+    // Here what we want is decimal digits, hence further transformation is required.
+    let prec = 1000; // Decimal
+    let prec_bin = (prec as f64 * 3.3219281).round() as u32 + 10; // Binary precision
+
+    let mut pi = Float::with_val(prec_bin, 0.);
+    let mut deno: Float = Float::with_val(prec_bin, 1);
+    let mut comm: Float = Float::with_val(prec_bin, 0);
+
+    for _ in start_idx..end_idx {
         let a = 4 / (comm.clone() + 1);
         let b = 2 / (comm.clone() + 4);
         let c = 1 / (comm.clone() + 5);
-        let d = 1 / (comm + 6);
+        let d = 1 / (comm.clone() + 6);
 
-        let mut s = a - b - c - d;
-        for _ in 0..i {
-            s /= 16;
-        }
-        pi += s;
+        pi += (a - b - c - d) / &deno;
+        comm += 8;
+        deno *= 16;
     }
 
     format!("{pi:.1000}")
@@ -191,19 +198,17 @@ fn dashu_bbp(start_idx: u64, end_idx: u64) -> String {
         .unwrap()
         .with_precision(prec)
         .unwrap();
-    for i in start_idx..end_idx {
-        let comm: DBig = DBig::try_from(i).unwrap().with_precision(prec).unwrap() * 8;
-        let a = 4 / (comm.clone() + 1);
-        let b = 2 / (comm.clone() + 4);
-        let c = 1 / (comm.clone() + 5);
-        let d = 1 / (comm + 6);
+    let mut deno = DBig::from(1).with_precision(prec).unwrap();
+    let mut comm = DBig::from(0).with_precision(prec).unwrap();
+    for _ in start_idx..end_idx {
+        let a = 4 / (&comm + 1);
+        let b = 2 / (&comm + 4);
+        let c = 1 / (&comm + 5);
+        let d = 1 / (&comm + 6);
 
-        let mut s: DBig = a - b - c - d;
-        s = s.with_precision(prec).unwrap();
-        for _ in 0..i {
-            s /= 16;
-        }
-        pi += s;
+        pi += (a - b - c - d) / &deno;
+        comm += 8;
+        deno *= 16;
     }
 
     format!("{}", pi.to_string())
@@ -211,8 +216,9 @@ fn dashu_bbp(start_idx: u64, end_idx: u64) -> String {
 
 fn bigfloat_bbp(start_idx: u64, end_idx: u64) -> String {
     let mut pi = ZERO;
-    for i in start_idx..end_idx {
-        let comm = ONE.mul(&i.into()).mul(&8.into());
+    let mut comm = ZERO;
+    let mut deno = ONE;
+    for _ in start_idx..end_idx {
         let a = ONE.mul(&4.into()) / (comm.add(&1.into()));
         let b = ONE.mul(&2.into()) / (comm.add(&4.into()));
         let c = ONE / (comm.add(&5.into()));
@@ -225,36 +231,82 @@ fn bigfloat_bbp(start_idx: u64, end_idx: u64) -> String {
         // let c = BigFloat::from_u8(1) / (comm.add(&5.into()));
         // let d = BigFloat::from_u8(1) / (comm.add(&6.into()));
 
-        let mut s = a - b - c - d;
-        for _ in 0..i {
-            s /= ONE.mul(&16.into());
-        }
-        pi += s;
+        pi += (a - b - c - d) / deno;
+        comm += &8.into();
+        deno *= &16.into();
     }
 
     format!("{pi:.1000}")
 }
 
 fn astro_float_bbp(start_idx: u64, end_idx: u64) -> String {
-    let prec = 1000;
+    let prec = 1000; // Decimal
+    let prec_bin = (prec as f64 * 3.3219281).round() as usize + 10; // Binary precision
+
     let rm = RoundingMode::None;
-    let mut pi = AFloat::from_u8(0, prec);
-    for i in start_idx..end_idx {
-        let comm = AFloat::from_u64(i, prec).mul_full_prec(&8.into());
-        let a = AFloat::from_u8(4, prec).div(&comm.add(&1.into(), prec, rm), prec, rm);
-        let b = AFloat::from_u8(2, prec).div(&comm.add(&4.into(), prec, rm), prec, rm);
-        let c = AFloat::from_u8(1, prec).div(&comm.add(&5.into(), prec, rm), prec, rm);
-        let d = AFloat::from_u8(1, prec).div(&comm.add(&6.into(), prec, rm), prec, rm);
 
-        let mut s = a.sub(&b, prec, rm).sub(&c, prec, rm).sub(&d, prec, rm);
+    let mut pi = AFloat::from_u8(0, prec_bin);
+    let mut comm = AFloat::from_u8(0, prec_bin);
+    let mut deno = AFloat::from_u8(1, prec_bin);
+    for _ in start_idx..end_idx {
+        let a = AFloat::from_u8(4, prec_bin).div(&comm.add(&1.into(), prec_bin, rm), prec_bin, rm);
+        let b = AFloat::from_u8(2, prec_bin).div(&comm.add(&4.into(), prec_bin, rm), prec_bin, rm);
+        let c = AFloat::from_u8(1, prec_bin).div(&comm.add(&5.into(), prec_bin, rm), prec_bin, rm);
+        let d = AFloat::from_u8(1, prec_bin).div(&comm.add(&6.into(), prec_bin, rm), prec_bin, rm);
 
-        for _ in 0..i {
-            s = s.div(&16.into(), prec, rm);
-        }
-        pi = pi.add(&s, prec, rm);
+        let s = a
+            .sub(&b, prec_bin, rm)
+            .sub(&c, prec_bin, rm)
+            .sub(&d, prec_bin, rm)
+            .div(&deno, prec_bin, rm);
+        pi = pi.add(&s, prec_bin, rm);
+        comm = comm.add(&8.into(), prec_bin, rm);
+        deno = deno.mul(&16.into(), prec_bin, rm);
     }
 
     format!("{pi:.1000}")
+}
+
+fn fastnum_bbp(start_idx: u64, end_idx: u64) -> String {
+    let mut pi = dec1024!(0);
+    let mut deno = dec1024!(1);
+    let mut comm = dec1024!(0);
+
+    let four = dec1024!(4);
+    let two = dec1024!(2);
+    let one = dec1024!(1);
+    for _ in start_idx..end_idx {
+        let a = four / (comm + 1);
+        let b = two / (comm + 4);
+        let c = one / (comm + 5);
+        let d = one / (comm + 6);
+
+        pi += (a - b - c - d) / deno;
+        comm += 8;
+        deno *= 16;
+    }
+    format!("{pi:.1000}")
+}
+
+fn decimal_rs_bbp(start_idx: u64, end_idx: u64) -> String {
+    let mut pi = RDecimal::from(0);
+    // let mut deno = RDecimal::from(1);
+    let mut comm = RDecimal::from(0);
+    for i in start_idx..end_idx {
+        let a = 4 / (comm + 1);
+        let b = 2 / (comm + 4);
+        let c = 1 / (comm + 5);
+        let d = 1 / (comm + 6);
+
+        let mut s = a - b - c - d;
+        for _ in 0..i {
+            s /= 16;
+        }
+        pi += s;
+        comm += 8;
+        // deno *= 16; // This will cause overflow
+    }
+    format!("{}", pi.to_string())
 }
 
 fn main() {
@@ -271,6 +323,8 @@ fn main() {
         Actions::DashuBbp => dashu_bbp,
         Actions::BigFloatBbp => bigfloat_bbp,
         Actions::AstroFloatBbp => astro_float_bbp,
+        Actions::FastnumBbp => fastnum_bbp,
+        Actions::DecimalRsBbp => decimal_rs_bbp,
     };
 
     let pi = func(0, cli.cnt);

@@ -1,8 +1,5 @@
 import sys
-from decimal import Decimal, getcontext
 
-ctx = getcontext()
-ctx.prec = 1000
 
 PI_1000 = "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821\
 48086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233\
@@ -14,7 +11,8 @@ PI_1000 = "3.1415926535897932384626433832795028841971693993751058209749445923078
 8753320838142061717766914730359825349042875546873115956286388235378759375195778185778053217122680661300192787661119590921642019"
 
 
-PI = "3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148\
+PI = (
+    "3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148\
 08651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344\
 61284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209\
 62829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105\
@@ -39,31 +37,66 @@ PI = "3.141592653589793238462643383279502884197169399375105820974944592307816406
 03559363456817432411251507606947945109659609402522887971089314566913686722874894056010150330861792868092087476091\
 78249385890097149096759852613655497818931297848216829989487226588048575640142704775551323796414515237462343645428\
 58444795265867821051141354735739"
+)
 
-def calc_pi_bbp(start_idx: int, end_idx: int) -> str:
+
+def calc_pi_bbp_c(start_idx: int, end_idx: int) -> str:
+    from decimal import Decimal, getcontext
+
+    getcontext().prec = 1000
+
     pi = Decimal(0)
-    for i in range(start_idx, end_idx):
-        common = Decimal(i) * 8
-        a = 4 / (common + 1)
-        b = 2 / (common + 4)
-        c = 1 / (common + 5)
-        d = 1 / (common + 6)
-        
-        s = a - b - c - d
-        for _ in range(i):
-            s /= 16
-        pi += s
+    comm = Decimal(0)
+    deno = Decimal(1)
+    for _ in range(start_idx, end_idx):
+        a = 4 / (comm + 1)
+        b = 2 / (comm + 4)
+        c = 1 / (comm + 5)
+        d = 1 / (comm + 6)
+
+        pi += (a - b - c - d) / deno
+        comm += 8
+        deno *= 16
     return str(pi)
+
+
+def calc_pi_bbp_py(start_idx: int, end_idx: int) -> str:
+    from _pydecimal import Decimal, getcontext
+
+    getcontext().prec = 1000
+    pi = Decimal(0)
+    comm = Decimal(0)
+    deno = Decimal(1)
+    for _ in range(start_idx, end_idx):
+        a = 4 / (comm + 1)
+        b = 2 / (comm + 4)
+        c = 1 / (comm + 5)
+        d = 1 / (comm + 6)
+
+        pi += (a - b - c - d) / deno
+        comm += 8
+        deno *= 16
+    return str(pi)
+
 
 def cmp_pi(pi: str):
     to_digit = min(len(pi), len(PI))
     for i in range(to_digit):
         if PI[i] != pi[i]:
-            print(f"Pi is different at digit :{i}")
+            print(f"Pi is different at digit {i}")
             return
     print("All digits are matched!")
 
 
-cnt = sys.argv[1]
-pi = calc_pi_bbp(0, int(cnt))
+if len(sys.argv) < 3:
+    print("Wrong argument number.")
+    print("Usage: python main.py <TYPE> <CNT>")
+    exit(1)
+
+ty = sys.argv[1]
+cnt = sys.argv[2]
+if ty.upper() == "C":
+    pi = calc_pi_bbp_c(0, int(cnt))
+else:
+    pi = calc_pi_bbp_py(0, int(cnt))
 cmp_pi(pi)

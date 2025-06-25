@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This is for bigdecimal crate
+# See: https://github.com/akubera/bigdecimal-rs?tab=readme-ov-file#compile-time-configuration
+export RUST_BIGDECIMAL_DEFAULT_PRECISION=1000 
 cargo build -r
 
 BIN_PATH=./target/release/pi_series
@@ -13,4 +16,7 @@ hyperfine --export-markdown result.md --shell=none \
     "$BIN_PATH $RUNS dashu-bbp" \
     "$BIN_PATH $RUNS big-float-bbp" \
     "$BIN_PATH $RUNS astro-float-bbp" \
-    "python main.py $RUNS"
+    "$BIN_PATH $RUNS fastnum-bbp" \
+    "$BIN_PATH $RUNS decimal-rs-bbp" \
+    "python main.py C $RUNS" \
+    "python main.py PY $RUNS" \
