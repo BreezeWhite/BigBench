@@ -18,6 +18,7 @@ Here compares the following Rust crates that are designed to deal with big numbe
 | [astro-float](https://github.com/stencillogic/astro-float) | arbitrary | binary | Pure Rust. Extra efforts to use (see [appendix](#lack-supports-of-direct-arithmetic-manipulation)) |
 | [fastnum](https://github.com/neogenie/fastnum) | 307 | binary | Pure Rust |
 | [decimal-rs](https://github.com/yashan-technologies/decimal-rs) | 37 | binary | Pure Rust |
+| [primitive_fixed_point_decimal](https://github.com/WuBingzheng/primitive_fixed_point_decimal) | 35 | binary | Pure Rust. Contributed by [WuBingzheng](https://github.com/WuBingzheng) in [PR #1](https://github.com/BreezeWhite/BigBench/pull/1) |
 
 A raw Rust f64 version and also two Python versions using `decimal` are implemented to compare with these crates. 
 
@@ -52,10 +53,11 @@ The results are as the following table:
 | `bigdecimal` | 1987.993 ± 23.475 | 3786.60 ± 342.69 | 1000 |
 | `rug` | 9.991 ± 0.377 | 19.03 ± 1.85 | 1000 |
 | `dashu` | 24.158 ± 1.364 | 46.01 ± 4.88 | 1000 |
-| `num_bigfloat` | 4.046 ± 0.21 | 7.71 ± 0.80 | 39 |
+| `num-bigfloat` | 4.046 ± 0.21 | 7.71 ± 0.80 | 39 |
 | `astro-float` | 30.776 ± 0.371 | 58.62 ± 5.31 | 1000 |
 | `fastnum` | 612.834 ± 11.129 | 1145.51 ± 152.79 | 307 |
 | `decimal-rs` | 24.555 ± 0.456 | 45.90 ± 6.12 | 37 |
+| `primitive_fixed_point_decimal` | 17.504 ± 0.58 | 45.90 ± 6.12 | 32.94 ± 2.65 |
 | Python `decimal` (libmpdec) | 45.661 ± 2.27 | 86.97 ± 8.92 | 1000 |
 | Python `decimal` (_pydecimal) | 1360 ± 17 | 2595.26 ± 209.71 | 1000 |
 
@@ -65,6 +67,7 @@ The results are as the following table:
 - The second and the third are `rust-decimal` and `num_bigfloat`, for which both use fix-length representation and thus the correctness are also limited.
 - `decimal-rs` is much slower than the above two crates, which they all use fix-length of number representation.
 - `fastnum` also uses a fixed-length representation, but it is significantly slower than all other approaches. This may be due to implicit cloning of shared objects, although it does offer higher precision than other fixed-length solutions.
+- `primitive_fixed_point_decimal` puses a different underlying representation, and its performance is roughly comparable to that of `decimal-rs`. See more details about the differences [here](https://github.com/WuBingzheng/primitive_fixed_point_decimal/blob/master/COMPARISON.md).
 - `rug` is the fastest among approaches that support arbitrary precision, though it depends on external GNU libraries. Note that the precision setting in the code refers to binary digits, so you need to manually convert the precision value to achieve the desired number of decimal digits.
 - Both `dashu` and `astro-float` have roughly the same level of speed, for `dashu` is slightly faster over `astro-float`. But for the user experience, `astro-float` is much more lengthy to write compared to `dashu`. `astro-float` leverages a functional way for arithmetic operations. On the other hand, `dashu` could do it in a normal way of using arithmetic signs.
 - Somewhat surprisingly, Python’s `decimal` outperforms the other three Rust crates, largely due to its underlying C implementation. When using the pure Python version, however, performance drops dramatically.

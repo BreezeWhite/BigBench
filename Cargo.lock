@@ -427,6 +427,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "int-div-cum-error"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d52198fce7a97a2eb118412b704db2a5e7d49d109d46f9b37a95f3474599bf52"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "is_terminal_polyfill"
 version = "1.70.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -565,6 +574,7 @@ dependencies = [
  "decimal-rs",
  "fastnum",
  "num-bigfloat",
+ "primitive_fixed_point_decimal",
  "rug",
  "rust_decimal",
 ]
@@ -576,6 +586,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "85eae3c4ed2f50dcfe72643da4befc30deadb458a9b590d720cde2f2b1e97da9"
 dependencies = [
  "zerocopy",
+]
+
+[[package]]
+name = "primitive_fixed_point_decimal"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74c668ac30062f718f06fbb74ef2961646b8cf1bbf1783554b0d2a81d74d6f90"
+dependencies = [
+ "int-div-cum-error",
+ "num-traits",
 ]
 
 [[package]]

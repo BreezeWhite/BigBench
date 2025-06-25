@@ -5,9 +5,9 @@ use dashu::float::DBig;
 use decimal_rs::Decimal as RDecimal;
 use fastnum::dec1024;
 use num_bigfloat::{ONE, ZERO};
+use primitive_fixed_point_decimal::{ConstScaleFpdec, fpdec};
 use rug::Float;
 use rust_decimal::prelude::*;
-use primitive_fixed_point_decimal::{ConstScaleFpdec, fpdec};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -329,6 +329,7 @@ fn prim_fpdec_bbp(start_idx: u64, end_idx: u64) -> String {
 
         let mut s = a - b - c - d;
         for _ in 0..i {
+            // Use loop to avoid overflow
             s = s.checked_div_int(16).unwrap();
         }
         pi += s;
