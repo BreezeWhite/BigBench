@@ -18,5 +18,6 @@ hyperfine --export-markdown result.md --shell=none \
     "$BIN_PATH $RUNS astro-float-bbp" \
     "$BIN_PATH $RUNS fastnum-bbp" \
     "$BIN_PATH $RUNS decimal-rs-bbp" \
+    "$BIN_PATH $RUNS prim-fpdec-bbp" \
     "python main.py C $RUNS" \
     "python main.py PY $RUNS" \

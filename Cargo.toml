@@ -15,3 +15,4 @@ fastnum = "0.2.10"
 num-bigfloat = { version = "1.7.2", default-features = false }
 rug = "1.27.0"
 rust_decimal = { version = "1.37.2", features = ["macros"] }
+primitive_fixed_point_decimal = "0.7"

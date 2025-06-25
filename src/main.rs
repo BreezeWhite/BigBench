@@ -7,6 +7,7 @@ use fastnum::dec1024;
 use num_bigfloat::{ONE, ZERO};
 use rug::Float;
 use rust_decimal::prelude::*;
+use primitive_fixed_point_decimal::{ConstScaleFpdec, fpdec};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -31,6 +32,8 @@ enum Actions {
     AstroFloatBbp,
     FastnumBbp,
     DecimalRsBbp,
+    PrimFpdecBbp,
+    PrimFpdecLeibniz,
 }
 
 const PI_1000: &str = "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821\
@@ -309,6 +312,48 @@ fn decimal_rs_bbp(start_idx: u64, end_idx: u64) -> String {
     format!("{}", pi.to_string())
 }
 
+type PrimFpdec = ConstScaleFpdec<i128, 35>;
+fn prim_fpdec_bbp(start_idx: u64, end_idx: u64) -> String {
+    let mut pi = PrimFpdec::ZERO;
+    let mut comm = PrimFpdec::ZERO;
+
+    for i in start_idx..end_idx {
+        let n4: PrimFpdec = fpdec!(4);
+        let n2: PrimFpdec = fpdec!(2);
+        let n1: PrimFpdec = fpdec!(1);
+
+        let a = n4.checked_div(comm + fpdec!(1)).unwrap();
+        let b = n2.checked_div(comm + fpdec!(4)).unwrap();
+        let c = n1.checked_div(comm + fpdec!(5)).unwrap();
+        let d = n1.checked_div(comm + fpdec!(6)).unwrap();
+
+        let mut s = a - b - c - d;
+        for _ in 0..i {
+            s = s.checked_div_int(16).unwrap();
+        }
+        pi += s;
+        comm += fpdec!(8);
+    }
+    format!("{pi}")
+}
+
+fn prim_fpdec_leibniz(start_idx: u64, end_idx: u64) -> String {
+    let mut nume: PrimFpdec = if start_idx % 2 == 0 {
+        fpdec!(1)
+    } else {
+        fpdec!(-1)
+    };
+    let mut sum: PrimFpdec = fpdec!(0);
+    for i in start_idx..end_idx {
+        let deno = i * 2 + 1;
+        sum += nume.checked_div_int(deno as i128).unwrap();
+        nume = -nume;
+    }
+
+    let pi = sum.checked_mul_int(4).unwrap();
+    format!("{pi}")
+}
+
 fn main() {
     let cli = Cli::parse();
 
@@ -325,6 +370,8 @@ fn main() {
         Actions::AstroFloatBbp => astro_float_bbp,
         Actions::FastnumBbp => fastnum_bbp,
         Actions::DecimalRsBbp => decimal_rs_bbp,
+        Actions::PrimFpdecBbp => prim_fpdec_bbp,
+        Actions::PrimFpdecLeibniz => prim_fpdec_leibniz,
     };
 
     let pi = func(0, cli.cnt);
