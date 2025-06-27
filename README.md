@@ -1,24 +1,24 @@
 # Rust Big Number Benchmark
 
-This project is to compare different Rust big number crates in views of performance and precision.
+This project compares different Rust big number crates in views of performance and precision.
 
-The scenario used for testing is to calculate Pi to a thousand digits as close as possible. Algorithm leveraged to calculate Pi is [Bailey–Borwein–Plouffe formula (BBP)](https://en.wikipedia.org/wiki/Bailey%E2%80%93Borwein%E2%80%93Plouffe_formula).
+The scenario leveraged for benchmarking is to calculate Pi to a thousand digits as close as possible. Algorithm applied to calculate Pi is [Bailey–Borwein–Plouffe formula (BBP)](https://en.wikipedia.org/wiki/Bailey%E2%80%93Borwein%E2%80%93Plouffe_formula).
 
 ## Big Number Crates
 
 Here compares the following Rust crates that are designed to deal with big numbers:
 
-| Crate | Sig. Figs. | Precision Type | Note |
+| Crate | Precision | Precision Type | Note |
 | --- | --- | --- | --- |
 | [bigdecimal](https://github.com/akubera/bigdecimal-rs) | arbitrary | decimal | Pure Rust. Need to set precision at compile time (see [ref](https://github.com/akubera/bigdecimal-rs?tab=readme-ov-file#compile-time-configuration)) |
 | [rug](https://gitlab.com/tspiteri/rug) | arbitrary | binary | Depends on external GNU library |
-| [rust-decimal](https://github.com/paupino/rust-decimal) | 28 | binary | Pure Rust |
+| [rust-decimal](https://github.com/paupino/rust-decimal) | limited | binary | Pure Rust |
 | [dashu](https://github.com/cmpute/dashu) | arbitrary | decimal | Pure Rust. |
-| [num-bigfloat](https://github.com/stencillogic/num-bigfloat) | 39 | binary | Pure Rust. Tricky to use (see [appendix](#careful-about-using-num_bigfloat)). |
+| [num-bigfloat](https://github.com/stencillogic/num-bigfloat) | limited | binary | Pure Rust. Tricky to use (see [appendix](#careful-about-using-num_bigfloat)). |
 | [astro-float](https://github.com/stencillogic/astro-float) | arbitrary | binary | Pure Rust. Extra efforts to use (see [appendix](#lack-supports-of-direct-arithmetic-manipulation)) |
-| [fastnum](https://github.com/neogenie/fastnum) | 307 | binary | Pure Rust |
-| [decimal-rs](https://github.com/yashan-technologies/decimal-rs) | 37 | binary | Pure Rust |
-| [primitive_fixed_point_decimal](https://github.com/WuBingzheng/primitive_fixed_point_decimal) | 35 | binary | Pure Rust. Contributed by [WuBingzheng](https://github.com/WuBingzheng) in [PR #1](https://github.com/BreezeWhite/BigBench/pull/1) |
+| [fastnum](https://github.com/neogenie/fastnum) | limited | binary | Pure Rust |
+| [decimal-rs](https://github.com/yashan-technologies/decimal-rs) | limited | binary | Pure Rust |
+| [primitive_fixed_point_decimal](https://github.com/WuBingzheng/primitive_fixed_point_decimal) | limited | decimal | Pure Rust. Contributed by [WuBingzheng](https://github.com/WuBingzheng) in [PR #1](https://github.com/BreezeWhite/BigBench/pull/1) |
 
 A raw Rust f64 version and also two Python versions using `decimal` are implemented to compare with these crates. 
 
