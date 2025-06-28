@@ -57,7 +57,7 @@ The results are as the following table:
 | `astro-float` | 30.776 ± 0.371 | 58.62 ± 5.31 | 1000 |
 | `fastnum` | 612.834 ± 11.129 | 1145.51 ± 152.79 | 307 |
 | `decimal-rs` | 24.555 ± 0.456 | 45.90 ± 6.12 | 37 |
-| `primitive_fixed_point_decimal` | 17.504 ± 0.58 | 45.90 ± 6.12 | 32.94 ± 2.65 |
+| `primitive_fixed_point_decimal` | 17.504 ± 0.58 | 45.90 ± 6.12 | 35 |
 | Python `decimal` (libmpdec) | 45.661 ± 2.27 | 86.97 ± 8.92 | 1000 |
 | Python `decimal` (_pydecimal) | 1360 ± 17 | 2595.26 ± 209.71 | 1000 |
 
