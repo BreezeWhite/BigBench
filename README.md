@@ -19,6 +19,7 @@ Here compares the following Rust crates that are designed to deal with big numbe
 | [fastnum](https://github.com/neogenie/fastnum) | limited | binary | Pure Rust |
 | [decimal-rs](https://github.com/yashan-technologies/decimal-rs) | limited | binary | Pure Rust |
 | [primitive_fixed_point_decimal](https://github.com/WuBingzheng/primitive_fixed_point_decimal) | limited | decimal | Pure Rust. Contributed by [WuBingzheng](https://github.com/WuBingzheng) in [PR #1](https://github.com/BreezeWhite/BigBench/pull/1) |
+| [malachite](https://github.com/mhogrefe/malachite) | arbitrary | binary | Pure Rust. |
 
 A raw Rust f64 version and also two Python versions using `decimal` are implemented to compare with these crates. 
 
@@ -58,6 +59,7 @@ The results are as the following table:
 | `fastnum` | 612.834 ± 11.129 | 1145.51 ± 152.79 | 307 |
 | `decimal-rs` | 24.555 ± 0.456 | 45.90 ± 6.12 | 37 |
 | `primitive_fixed_point_decimal` | 17.504 ± 0.58 | 45.90 ± 6.12 | 35 |
+| `malachite` | 70.9ms ± 3.2 | 135.47 ± 68.09 | 1000 |
 | Python `decimal` (libmpdec) | 45.661 ± 2.27 | 86.97 ± 8.92 | 1000 |
 | Python `decimal` (_pydecimal) | 1360 ± 17 | 2595.26 ± 209.71 | 1000 |
 

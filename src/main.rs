@@ -34,6 +34,7 @@ enum Actions {
     DecimalRsBbp,
     PrimFpdecBbp,
     PrimFpdecLeibniz,
+    MalachiteBbp,
 }
 
 const PI_1000: &str = "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821\
@@ -355,6 +356,50 @@ fn prim_fpdec_leibniz(start_idx: u64, end_idx: u64) -> String {
     format!("{pi}")
 }
 
+fn malachite_bbp(start_idx: u64, end_idx: u64) -> String {
+    use malachite::Float;
+
+    let decimal_prec = 1000;
+    let prec = (decimal_prec as f64 * 3.3219281).round() as u64 + 10;
+
+    let mut pi = Float::from(0);
+    let mut term = Float::from(0);
+    let mut deno = Float::from(1);
+    let mut comm = 0;
+
+    let mut a = Float::from(0);
+    let mut b = Float::from(0);
+    let mut c = Float::from(0);
+    let mut d = Float::from(0);
+    for _ in start_idx..end_idx {
+        a.clone_from(&comm.into());
+        (a, _) = a.add_prec(1.into(), prec);
+        (a, _) = Float::from(4).div_prec(a, prec);
+
+        b.clone_from(&comm.into());
+        (b, _) = b.add_prec(4.into(), prec);
+        (b, _) = Float::from(2).div_prec(b, prec);
+
+        c.clone_from(&comm.into());
+        (c, _) = c.add_prec(5.into(), prec);
+        (c, _) = Float::from(1).div_prec(c, prec);
+
+        d.clone_from(&comm.into());
+        (d, _) = d.add_prec(6.into(), prec);
+        (d, _) = Float::from(1).div_prec(d, prec);
+
+        term.clone_from(&a);
+        term -= &b + &c + &d;
+        term /= &deno;
+
+        pi += &term;
+        comm += 8;
+        (deno, _) = deno.mul_prec(16.into(), prec);
+    }
+
+    format!("{pi:.1000}")
+}
+
 fn main() {
     let cli = Cli::parse();
 
@@ -373,6 +418,7 @@ fn main() {
         Actions::DecimalRsBbp => decimal_rs_bbp,
         Actions::PrimFpdecBbp => prim_fpdec_bbp,
         Actions::PrimFpdecLeibniz => prim_fpdec_leibniz,
+        Actions::MalachiteBbp => malachite_bbp,
     };
 
     let pi = func(0, cli.cnt);
