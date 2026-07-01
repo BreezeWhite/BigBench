@@ -142,5 +142,5 @@ ax1.set_ylim(ymin=0.0, ymax=max_median * 1.35)
 ax2.set_ylim(ymin=0.0, ymax=max_correct * 1.35)
 
 plt.tight_layout()
-plt.savefig("results.png", bbox_inches='tight')
+plt.savefig("results.png", bbox_inches='tight', dpi=300)
 print("Plot saved successfully to results.png")
