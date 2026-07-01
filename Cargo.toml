@@ -17,3 +17,5 @@ rug = "1.27.0"
 rust_decimal = { version = "1.37.2", features = ["macros"] }
 primitive_fixed_point_decimal = "0.7"
 malachite = { version = "0.6.1", features = ["floats"] }
+fixed-num = { git = "https://github.com/wdanilo/fixed-num" }
+

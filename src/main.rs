@@ -8,6 +8,8 @@ use num_bigfloat::{ONE, ZERO};
 use primitive_fixed_point_decimal::{ConstScaleFpdec, fpdec};
 use rug::Float;
 use rust_decimal::prelude::*;
+use fixed_num::Dec19x19;
+
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -35,6 +37,7 @@ enum Actions {
     PrimFpdecBbp,
     PrimFpdecLeibniz,
     MalachiteBbp,
+    FixedNumBbp,
 }
 
 const PI_1000: &str = "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821\
@@ -400,6 +403,26 @@ fn malachite_bbp(start_idx: u64, end_idx: u64) -> String {
     format!("{pi:.1000}")
 }
 
+fn fixed_num_bbp(start_idx: u64, end_idx: u64) -> String {
+    let mut pi = Dec19x19!(0);
+    let mut comm = Dec19x19!(0);
+    for i in start_idx..end_idx {
+        let a = Dec19x19!(4) / (comm + Dec19x19!(1));
+        let b = Dec19x19!(2) / (comm + Dec19x19!(4));
+        let c = Dec19x19!(1) / (comm + Dec19x19!(5));
+        let d = Dec19x19!(1) / (comm + Dec19x19!(6));
+
+        let mut s = a - b - c - d;
+        for _ in 0..i {
+            s /= Dec19x19!(16);
+        }
+        pi += s;
+        comm += Dec19x19!(8);
+    }
+    format!("{pi:.1000}")
+}
+
+
 fn main() {
     let cli = Cli::parse();
 
@@ -419,6 +442,7 @@ fn main() {
         Actions::PrimFpdecBbp => prim_fpdec_bbp,
         Actions::PrimFpdecLeibniz => prim_fpdec_leibniz,
         Actions::MalachiteBbp => malachite_bbp,
+        Actions::FixedNumBbp => fixed_num_bbp,
     };
 
     let pi = func(0, cli.cnt);
